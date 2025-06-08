@@ -68,6 +68,7 @@ class Level1 extends Phaser.Scene {
         this.load.audio('background_music', 'assets/background_music.mp3');
         this.load.audio('bling_sound', 'assets/bling_sound.wav');
         this.load.audio('win_sound', 'assets/win.mp3');
+        this.load.image('chest1', 'assets/chest1.png');
     }
 
     create() {
@@ -186,7 +187,18 @@ class Level1 extends Phaser.Scene {
     tryDoor(player, door) {
         if (this.doorOpen) {
             this.music.stop();
+
+            // Stop and hide enemy
+            this.enemy.setVelocity(0, 0);
+            this.enemy.setVisible(false);
+
+            // Show chest1 full screen
+            this.add.image(400, 300, 'chest1').setDisplaySize(800, 600);
+
+            // Show win text
             this.add.text(250, 300, 'TRUTH DEFEATED', { fontSize: '32px', fill: '#fff' });
+
+            // After delay → go back to LevelSelect
             this.time.delayedCall(3000, () => {
                 this.scene.start('LevelSelect');
             });
@@ -234,13 +246,7 @@ class Level2 extends Phaser.Scene {
         this.graphics = this.add.graphics();
 
         // Input 
-        this.cursors = this.input.keyboard.addKeys({
-            left: 'A',
-            right: 'D',
-            up: 'W',
-            down: 'S',
-            attack: 'SPACE'
-        });
+        this.cursors = this.input.keyboard.createCursorKeys();
 
         // Sound
         this.winSound = this.sound.add('win_sound', { volume: 0.4 });
@@ -265,7 +271,7 @@ class Level2 extends Phaser.Scene {
             this.player.setVelocityY(this.player.speed);
         }
 
-        this.player.attack = this.cursors.attack.isDown;
+        this.player.attack = this.cursors.space.isDown;
 
         // Enemy logic
         this.enemyDelayCounter += delta;
@@ -322,9 +328,20 @@ class Level2 extends Phaser.Scene {
     }
 
     winLevel() {
+        // Play sound FIRST
         this.winSound.play();
-        this.add.image(400, 300, 'chest2');
-        this.add.text(300, 300, 'Anger Defeated', { fontSize: '32px', fill: '#000' });
+
+        // OPTIONAL → hide player & enemy (looks cleaner)
+        this.player.setVisible(false);
+        this.enemy.setVisible(false);
+
+        // Show chest2 full screen
+        this.add.image(400, 300, 'chest2').setDisplaySize(800, 600);
+
+        // Show win text (optional)
+        this.add.text(400, 300, 'Anger Defeated', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
+
+        // After delay → back to LevelSelect
         this.time.delayedCall(3000, () => {
             this.scene.start('LevelSelect');
         });
@@ -375,6 +392,8 @@ class Level3 extends Phaser.Scene {
     }
 
     update() {
+        if (this.gameOver) return;
+
         // Movement
         this.player.setVelocityX(0);
 
@@ -420,23 +439,35 @@ class Level3 extends Phaser.Scene {
     handleCollision(player, obj) {
         if (obj.isKey && !this.keySecured) {
             this.keySecured = true;
+            this.gameOver = true;  // STOP update()
+
             this.winSound.play();
 
-            this.add.image(300, 200, 'chest3');
-            this.add.text(200, 200, 'Bargaining Defeated', { fontSize: '32px', fill: '#0000ff' });
+            // Show chest3 full screen
+            this.add.image(400, 300, 'chest3').setDisplaySize(800, 600);
 
+            // Win text
+            this.add.text(400, 300, 'Bargaining Defeated', { fontSize: '32px', fill: '#0000ff' }).setOrigin(0.5);
+
+            // After delay → back to LevelSelect
             this.time.delayedCall(3000, () => {
                 this.scene.start('LevelSelect');
             });
-        } else if (!obj.isKey) {
+        }
+        else if (!obj.isKey && !this.keySecured) {
             this.loseLevel();
         }
     }
 
-    loseLevel() {
-        this.add.rectangle(300, 200, 600, 400, 0x000000, 0.8);
-        this.add.text(100, 200, 'YOU ARE TO BLAME. TRY AGAIN', { fontSize: '32px', fill: '#fff' });
 
+    loseLevel() {
+        // FULL black rectangle
+        this.add.rectangle(400, 300, 800, 600, 0x000000, 1);
+
+        // Lose text centered
+        this.add.text(400, 300, 'YOU ARE TO BLAME. TRY AGAIN', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+
+        // After delay → back to LevelSelect
         this.time.delayedCall(5000, () => {
             this.scene.start('LevelSelect');
         });
@@ -464,6 +495,11 @@ class Level4 extends Phaser.Scene {
         // --- Background ---
         this.ground = this.add.tileSprite(400, 550, 800, 100, 'ground');
 
+        this.groundCollider = this.physics.add.staticImage(400, 550, 'ground')
+            .setDisplaySize(800, 100)
+            .refreshBody();
+
+
         // --- Player ---
         this.player = this.physics.add.sprite(100, 400, 'player').setDisplaySize(50, 50);
         this.player.setCollideWorldBounds(false);
@@ -482,6 +518,11 @@ class Level4 extends Phaser.Scene {
         this.physics.add.collider(this.player, this.platforms, () => {
             this.player.isJumping = false;
         });
+
+        this.physics.add.collider(this.player, this.groundCollider, () => {
+            this.player.isJumping = false;
+        });
+
 
         // --- Input ---
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -544,12 +585,17 @@ class Level4 extends Phaser.Scene {
     }
 
     winLevel() {
-        this.gameOver = true;
+        this.gameOver = true;  // STOP update()
+
         this.winSound.play();
 
-        this.add.image(400, 300, 'chest4');
-        this.add.text(250, 300, 'Depression Defeated', { fontSize: '32px', fill: '#000' });
+        // Show chest4 full screen
+        this.add.image(400, 300, 'chest4').setDisplaySize(800, 600);
 
+        // Win text
+        this.add.text(400, 300, 'Depression Defeated', { fontSize: '32px', fill: '#000' }).setOrigin(0.5);
+
+        // After delay → back to LevelSelect
         this.time.delayedCall(3000, () => {
             this.scene.start('LevelSelect');
         });
