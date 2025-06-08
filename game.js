@@ -13,11 +13,11 @@ class MainMenu extends Phaser.Scene {
     create() {
         this.add.image(400, 300, 'title').setDisplaySize(800, 600);
 
-        const playButton = this.add.image(400, 400, 'playbutton')
+        const playButton = this.add.image(250, 520, 'playbutton')
             .setDisplaySize(200, 80)
             .setInteractive();
 
-        const quitButton = this.add.image(400, 500, 'quitbutton')
+        const quitButton = this.add.image(550, 520, 'quitbutton')
             .setDisplaySize(200, 80)
             .setInteractive();
 
@@ -116,7 +116,8 @@ class Level1 extends Phaser.Scene {
                 this.walls.add(wall);
             }
             else if (cell === 'P') {
-                this.player = this.physics.add.sprite(x, y, 'player').setDisplaySize(this.cellSize, this.cellSize);
+                this.player = this.physics.add.sprite(x, y, 'player').setDisplaySize(32, 32);
+                this.player.body.setSize(28,28)
             }
             else if (cell === 'E') {
                 this.enemy = this.physics.add.sprite(x, y, 'eye').setDisplaySize(this.cellSize, this.cellSize);
@@ -194,7 +195,7 @@ class Level1 extends Phaser.Scene {
 
     loseLevel() {
         this.music.stop();
-        this.add.rectangle(400, 300, 800, 600, 0x000000, 0.8);
+        this.add.rectangle(400, 300, 800, 600, 0x000000, 1);
         this.add.text(150, 300, 'YOU ARE TO BLAME. TRY AGAIN', { fontSize: '32px', fill: '#fff' });
         this.time.delayedCall(5000, () => {
             this.scene.start('LevelSelect');
