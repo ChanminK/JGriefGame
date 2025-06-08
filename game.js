@@ -22,7 +22,7 @@ class MainMenu extends Phaser.Scene {
             .setInteractive();
 
         playButton.on('pointerdown', () => {
-            this.scene.start('LevelSelect');
+            this.scene.start('IntroScene');
         });
 
         quitButton.on('pointerdown', () => {
@@ -30,6 +30,41 @@ class MainMenu extends Phaser.Scene {
         });
     }
 }
+
+// Intro 
+class IntroScene extends Phaser.Scene {
+    constructor() {
+        super('IntroScene');
+    }
+
+    create() {
+        const introText = 
+`This game is trying to depict what it might feel like going through the 5 stages of grief.
+
+The griever, who is what you play as, depicts a person's journey through the 5 stages of grief: truth, anger, bargaining, depression, and acceptance.
+
+Each level represents a creative depiction of each stage, and I hope that this was able to convey at least a fraction of what actual people go through.`;
+
+        // Display text
+        this.add.text(100, 80, introText, { 
+            fontSize: '20px', 
+            fill: '#ffffff',
+            wordWrap: { width: 600 }
+        });
+
+        // Instruction to continue
+        this.add.text(400, 550, 'Click anywhere to continue...', { 
+            fontSize: '24px', 
+            fill: '#ffff00' 
+        }).setOrigin(0.5);
+
+        // Input → go to LevelSelect
+        this.input.once('pointerdown', () => {
+            this.scene.start('LevelSelect');
+        });
+    }
+}
+
 
 // LevelSelector
 class LevelSelect extends Phaser.Scene {
@@ -692,7 +727,7 @@ var config = {
             debug: false
         }
     },
-    scene: [MainMenu, LevelSelect, Level1, Level2, Level3, Level4, Level5]
+    scene: [MainMenu, IntroScene, LevelSelect, Level1, Level2, Level3, Level4, Level5]
 };
 
 // START
